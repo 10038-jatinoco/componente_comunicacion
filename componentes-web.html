@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comunicación entre Componentes</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f4f4f4;
+      font-family: 'Arial', sans-serif;
+    }
+
+    interactive-component, display-component {
+      background-color: #fff;
+      border: 2px solid #3498db;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      width: 200px;
+      margin: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease-in-out;
+    }
+
+    interactive-component:hover, display-component:hover {
+      transform: scale(1.05);
+    }
+
+    button {
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background-color 0.3s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #217dbb;
+    }
+
+    #displayArea {
+      margin-top: 10px;
+      font-size: 16px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+<template id="interactive-template">
+  <button id="interactiveButton">Haz clic</button>
+</template>
+
+<script>
+  class InteractiveComponent extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(document.getElementById('interactive-template').content.cloneNode(true));
+      this.button = this.shadowRoot.getElementById('interactiveButton');
+      this.addEventListeners();
+    }
+
+    addEventListeners() {
+      this.button.addEventListener('click', () => {
+        const customEvent = new CustomEvent('customClick', {
+          bubbles: true,
+          detail: { message: '¡El botón fue clickeado!' },
+        });
+        document.dispatchEvent(customEvent);
+      });
+    }
+  }
+
+  customElements.define('interactive-component', InteractiveComponent);
+</script>
+
+
+<template id="display-template">
+  <div id="displayArea">Esperando interacción...</div>
+</template>
+
+<script>
+  class DisplayComponent extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this.shadowRoot.appendChild(document.getElementById('display-template').content.cloneNode(true));
+      this.displayArea = this.shadowRoot.getElementById('displayArea');
+      this.addEventListeners();
+    }
+
+    addEventListeners() {
+      document.addEventListener('customClick', (event) => {
+        this.displayArea.textContent = event.detail.message;
+      });
+    }
+  }
+
+  customElements.define('display-component', DisplayComponent);
+</script>
+
+<interactive-component></interactive-component>
+<display-component></display-component>
+
+</body>
+</html>
